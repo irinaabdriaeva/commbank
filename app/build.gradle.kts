@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kapt)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -57,11 +59,24 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
 
     // Jetpack Compose Navigation
-    implementation("androidx.navigation:navigation-compose:2.8.1")
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    implementation ("androidx.compose.ui:ui:1.7.3"   )    // Compose UI library
+    implementation ("androidx.compose.material3:material3:1.3.0") // Material Design 3
+    implementation ("androidx.compose.ui:ui-tooling-preview:1.7.3")
+    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
+    implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Compose Preview and Debugging
-    debugImplementation("androidx.compose.ui:ui-tooling:1.7.2")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.2")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.7.3")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.3")
+
+    //Hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+
+    implementation (libs.gson)
 
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
