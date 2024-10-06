@@ -12,7 +12,6 @@
     <list default="true" id="b8e0c259-b89b-40b4-9ac5-78120e2aa04c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/viewmodels/AccountViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/viewmodels/AccountViewModel.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

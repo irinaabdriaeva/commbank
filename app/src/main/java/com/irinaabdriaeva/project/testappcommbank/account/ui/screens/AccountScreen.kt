@@ -1,6 +1,7 @@
 package com.irinaabdriaeva.project.testappcommbank.account.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -22,12 +24,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction
 import com.irinaabdriaeva.project.testappcommbank.account.ui.viewmodels.AccountViewModel
@@ -193,14 +195,14 @@ fun DateHeader(date: String, relativeDate: String) {
     ) {
         Text(
             text = date,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
             color = CbaBlack
         )
         Text(
             modifier = Modifier.padding(start = 8.dp),
             text = relativeDate,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.titleLarge,
             color = CbaGrey
         )
     }
@@ -216,36 +218,42 @@ fun TransactionItem(transaction: Transaction) {
     ) {
         // Transaction icon based on category
         val iconRes = getIconForCategory(transaction.category)
-        Image(
+        Image(modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(Color.LightGray),
             painter = painterResource(id = iconRes),
             contentDescription = transaction.category,
-            modifier = Modifier.size(40.dp)
+
         )
 
         Spacer(modifier = Modifier.width(16.dp))
 
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 8.dp, end = 8.dp),
         ) {
             if (transaction.isPending) {
                 Text(
-                    text = "PENDING",
+                    text = "PENDING: ",
                     fontWeight = FontWeight.Bold,
-                    color = Color.Red,
-                    fontSize = 14.sp
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = CbaGrey,
                 )
             }
 
             Text(
                 text = transaction.description,
-                fontSize = 14.sp
+                style = MaterialTheme.typography.bodyMedium,
+                color = CbaGrey
             )
         }
 
         Text(
             text = "$${transaction.amount}",
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
+            style = MaterialTheme.typography.titleLarge,
+            color = CbaBlack
         )
     }
 }
