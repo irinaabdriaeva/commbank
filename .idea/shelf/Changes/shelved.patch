@@ -1,0 +1,53 @@
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.irinaabdriaeva.project.testappcommbank.account.ui.screens\n\nimport androidx.compose.foundation.layout.Column\nimport androidx.compose.foundation.layout.padding\nimport androidx.compose.foundation.lazy.LazyColumn\nimport androidx.compose.material3.CenterAlignedTopAppBar\nimport androidx.compose.material3.ExperimentalMaterial3Api\nimport androidx.compose.material3.MaterialTheme\nimport androidx.compose.material3.Scaffold\nimport androidx.compose.material3.Text\nimport androidx.compose.material3.TopAppBar\nimport androidx.compose.material3.TopAppBarDefaults\nimport androidx.compose.material3.rememberTopAppBarState\nimport androidx.compose.runtime.Composable\nimport androidx.compose.runtime.collectAsState\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.input.nestedscroll.nestedScroll\nimport androidx.compose.ui.unit.dp\nimport androidx.hilt.navigation.compose.hiltViewModel\nimport com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction\nimport com.irinaabdriaeva.project.testappcommbank.account.ui.viewmodels.AccountViewModel\n\n@OptIn(ExperimentalMaterial3Api::class)\n@Composable\nfun AccountScreen(\n    viewModel: AccountViewModel = hiltViewModel(),\n    onTransactionClick: (Transaction) -> Unit\n) {\n\n    val account = viewModel.account.collectAsState().value\n    val transactions = viewModel.transactions.collectAsState().value\n\n    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())\n    Scaffold(\n        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),\n        topBar = {\n            CenterAlignedTopAppBar(\n                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(\n                    containerColor = MaterialTheme.colorScheme.background,\n                    titleContentColor = MaterialTheme.colorScheme.primary,\n                ),\n                title = {\n                    Text(text = account.accountName)\n                },\n                scrollBehavior = scrollBehavior,\n            )\n        }\n    )\n\n    { innerPadding ->\n        Text(\n            \"Click the back button to pop from the back stack.\",\n            modifier = Modifier.padding(innerPadding),\n        )\n    }\n\n    Column {\n        Column(modifier = Modifier.padding(16.dp)) {\n            Text(text = \"Available: $${account.available}\", style = MaterialTheme.typography.bodyMedium)\n            Text(text = \"Balance: $${account.balance}\")\n            Text(text = \"BSB ${account.bsb} Account ${account.accountNumber}\")\n        }\n\n//        items(transactions.groupBy { it.effectiveDate }.toList()) { (date, groupedTransactions) ->\n//            Text(text = date, style = MaterialTheme.typography.subtitle1)\n//            groupedTransactions.forEach { transaction ->\n//                TransactionItem(transaction, onTransactionClick)\n//            }\n//        }\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt
+--- a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt	(revision 110856782d53a69aef95da3c3a6403757b6225cd)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt	(date 1728006072996)
+@@ -30,6 +30,42 @@
+     val account = viewModel.account.collectAsState().value
+     val transactions = viewModel.transactions.collectAsState().value
+ 
++
++    // Scaffold to manage the layout with a top bar and a content body
++    Scaffold(
++        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
++        topBar = {
++            CenterAlignedTopAppBar(
++                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
++                    containerColor = MaterialTheme.colorScheme.primaryContainer,
++                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
++                ),
++                title = { Text(text = "Account Overview") },
++                scrollBehavior = scrollBehavior
++            )
++        },
++        content = { innerPadding ->
++            Column(
++                modifier = Modifier
++                    .fillMaxSize()
++                    .padding(innerPadding)
++            ) {
++                // Non-scrollable content (Available, Balance, Pending)
++                AccountBalanceSection(
++                    available = "$1,000",
++                    balance = "$2,500",
++                    pending = "$200"
++                )
++
++                // Scrollable content (LazyColumn with onClick behavior)
++                LazyTransactionList(onTransactionClick = { transactionId ->
++                    // Handle transaction item click
++                    println("Clicked transaction ID: $transactionId")
++                })
++            }
++        }
++    )
++
+     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+     Scaffold(
+         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
