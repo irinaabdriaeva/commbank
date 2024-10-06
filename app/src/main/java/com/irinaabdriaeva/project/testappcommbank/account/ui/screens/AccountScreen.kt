@@ -1,14 +1,18 @@
 package com.irinaabdriaeva.project.testappcommbank.account.ui.screens
 
 import android.R.style
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -22,14 +26,18 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction
 import com.irinaabdriaeva.project.testappcommbank.account.ui.viewmodels.AccountViewModel
+import com.irinaabdriaeva.project.testappcommbank.account.utils.getIconForCategory
 import com.irinaabdriaeva.project.testappcommbank.ui.theme.CbaBlack
 import com.irinaabdriaeva.project.testappcommbank.ui.theme.CbaGrey
 
@@ -83,11 +91,23 @@ fun AccountScreen(
                 AccountDetailsSection(account.bsb, account.accountNumber)
                 HorizontalDivider(color = Color.LightGray, thickness = 2.dp)
                 // Scrollable content (LazyColumn with onClick behavior)
-                LazyTransactionList(onTransactionClick = { transactionId ->
-                    // Handle transaction item click
-                    println("Clicked transaction ID: $transactionId")
-                })
-                HorizontalDivider(color = Color.LightGray, thickness = 2.dp)
+                LazyColumn {
+                    transactions.forEach { transactionGroup ->
+                        // Use stickyHeader from Accompanist
+                        item {
+                            DateHeader(transactionGroup.date, transactionGroup.relativeDate)
+                        }
+//
+//                        // Display individual transactions
+//                        items(transactionGroup.transactions) { transaction ->
+//                            TransactionItem(transaction = transaction)
+//                        }
+                    }
+                }
+//                LazyTransactionList(onTransactionClick = { transactionId ->
+//                    // Handle transaction item click
+//                    println("Clicked transaction ID: $transactionId")
+//                })
             }
         }
     )
@@ -143,11 +163,12 @@ fun AccountBalanceSection(available: String, balance: String, pending: String) {
                 .padding(vertical = 4.dp),
         ) {
             Text(
-                text = "Balance ",
+                text = "Balance",
                 style = MaterialTheme.typography.bodyMedium,
                 color = CbaGrey
             )
             Text(
+                modifier = Modifier.padding(start = 8.dp),
                 text = "$$balance",
                 style = MaterialTheme.typography.bodyMedium,
                 color = CbaBlack,
@@ -161,28 +182,15 @@ fun AccountBalanceSection(available: String, balance: String, pending: String) {
                 .padding(vertical = 4.dp),
         ) {
             Text(
-                text = "Pending ", style = MaterialTheme.typography.bodyMedium,
+                text = "Pending",
+                style = MaterialTheme.typography.bodyMedium,
                 color = CbaGrey
             )
             Text(
+                modifier = Modifier.padding(start = 8.dp),
                 text = "$$pending",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold
-            )
-        }
-    }
-}
-
-@Composable
-fun LazyTransactionList(onTransactionClick: (String) -> Unit) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp)
-    ) {
-        items(50) { index ->
-            TransactionItem(
-                transactionId = "Transaction #$index",
-                onClick = onTransactionClick
             )
         }
     }
@@ -194,15 +202,78 @@ fun TransactionItem(transactionId: String, onClick: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clickable { onClick(transactionId) },
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 10.dp
-        )
+            .clickable { onClick(transactionId) }
     ) {
         Text(
             text = transactionId,
             modifier = Modifier.padding(16.dp),
             style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+fun DateHeader(date: String, relativeDate: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+    ) {
+        Text(
+            text = date,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = CbaBlack
+        )
+        Text(
+            modifier = Modifier.padding(start = 8.dp),
+            text = relativeDate,
+            style = MaterialTheme.typography.bodyMedium,
+            color = CbaGrey
+        )
+    }
+}
+
+@Composable
+fun TransactionItem(transaction: Transaction) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Transaction icon based on category
+        val iconRes = getIconForCategory(transaction.category)
+        Image(
+            painter = painterResource(id = iconRes),
+            contentDescription = transaction.category,
+            modifier = Modifier.size(40.dp)
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            if (transaction.isPending) {
+                Text(
+                    text = "PENDING",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Red,
+                    fontSize = 14.sp
+                )
+            }
+
+            Text(
+                text = transaction.description,
+                fontSize = 14.sp
+            )
+        }
+
+        Text(
+            text = "$${transaction.amount}",
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
         )
     }
 }
