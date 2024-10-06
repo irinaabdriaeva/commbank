@@ -47,6 +47,7 @@ fun AccountScreen(
 
     val account = viewModel.account.collectAsState().value
     val transactions = viewModel.transactions.collectAsState().value
+    val pending = viewModel.pendingAmount.collectAsState().value
     // Define the scroll behavior for the top bar
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -81,7 +82,7 @@ fun AccountScreen(
                 AccountBalanceSection(
                     available = account.available,
                     balance = account.balance,
-                    pending = "200" //todo fix that to show the correct data
+                    pending = pending
                 )
                 HorizontalDivider(color = Color.LightGray, thickness = 2.dp)
                 AccountDetailsSection(account.bsb, account.accountNumber)
@@ -129,7 +130,7 @@ fun AccountDetailsSection(bsb: String, accountNumber: String) {
 }
 
 @Composable
-fun AccountBalanceSection(available: String, balance: String, pending: String) {
+fun AccountBalanceSection(available: String, balance: String, pending: Double) {
     Column(
         modifier = Modifier
             .fillMaxWidth()

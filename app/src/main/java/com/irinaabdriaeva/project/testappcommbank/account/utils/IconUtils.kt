@@ -15,7 +15,6 @@ fun getIconForCategory(category: String): Int {
         "cash" -> R.drawable.icon_category_cash
         "travel" -> R.drawable.icon_category_travel
         "eating_out" -> R.drawable.icon_category_eating_out
-        "eating_out" -> R.drawable.icon_category_eating_out
 
         else -> R.drawable.icon_category_uncategorised
     }

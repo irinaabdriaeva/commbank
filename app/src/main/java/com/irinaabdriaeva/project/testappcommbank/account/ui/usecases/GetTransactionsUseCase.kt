@@ -5,7 +5,6 @@ import com.irinaabdriaeva.project.testappcommbank.account.data.repository.Accoun
 import javax.inject.Inject
 
 class GetTransactionsUseCase @Inject constructor(private val repository: AccountRepository) {
-
     suspend operator fun invoke(): List<Transaction> {
         return repository.getTransactions()
     }

@@ -1,8 +1,10 @@
 package com.irinaabdriaeva.project.testappcommbank.account.ui.viewmodels
 
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.irinaabdriaeva.project.testappcommbank.account.data.model.Account
+import com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction
 import com.irinaabdriaeva.project.testappcommbank.account.data.model.TransactionGroup
 import com.irinaabdriaeva.project.testappcommbank.account.ui.usecases.GetAccountDetailsUseCase
 import com.irinaabdriaeva.project.testappcommbank.account.ui.usecases.GetTransactionsUseCase
@@ -19,14 +21,24 @@ class AccountViewModel @Inject constructor(
     private val getAccountDetailsUseCase: GetAccountDetailsUseCase
 ) : ViewModel() {
 
-    private val _account = MutableStateFlow<Account>(Account("", "", "", "", ""))
+    private val _account = MutableStateFlow(Account("", "", "", "", ""))
     val account: StateFlow<Account> = _account
 
     private val _transactions = MutableStateFlow<List<TransactionGroup>>(emptyList())
     val transactions: StateFlow<List<TransactionGroup>> = _transactions
 
+    private val _pendingAmount = MutableStateFlow(0.0)
+    val pendingAmount: StateFlow<Double> = _pendingAmount
+
     init {
         loadData()
+    }
+
+    private fun getPendingAmount(transactions: List<Transaction>): Double {
+        val amount = transactions
+            .filter { it.isPending }
+            .sumOf { it.amount.toDouble() }
+        return amount
     }
 
     private fun loadData() {
@@ -37,6 +49,8 @@ class AccountViewModel @Inject constructor(
             // Load and group transactions by date
             val transactions = getTransactionsUseCase()
             _transactions.value = DateUtils.groupTransactionsByDate(transactions)
+
+            _pendingAmount.value = getPendingAmount(transactions)
         }
     }
 }
