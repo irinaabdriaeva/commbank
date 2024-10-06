@@ -26,10 +26,10 @@ class AccountViewModel @Inject constructor(
     val transactions: StateFlow<List<TransactionGroup>> = _transactions
 
     init {
-        loadTransactionData()
+        loadData()
     }
 
-    private fun loadTransactionData() {
+    private fun loadData() {
         viewModelScope.launch {
             // Load account details
             _account.value = getAccountDetailsUseCase()
