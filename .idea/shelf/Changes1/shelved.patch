@@ -1,0 +1,591 @@
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.irinaabdriaeva.project.testappcommbank.account.ui.screens\n\nimport android.R.style\nimport androidx.compose.foundation.clickable\nimport androidx.compose.foundation.layout.Arrangement\nimport androidx.compose.foundation.layout.Column\nimport androidx.compose.foundation.layout.PaddingValues\nimport androidx.compose.foundation.layout.Row\nimport androidx.compose.foundation.layout.fillMaxSize\nimport androidx.compose.foundation.layout.fillMaxWidth\nimport androidx.compose.foundation.layout.padding\nimport androidx.compose.foundation.lazy.LazyColumn\nimport androidx.compose.material3.Card\nimport androidx.compose.material3.CardDefaults\nimport androidx.compose.material3.CenterAlignedTopAppBar\nimport androidx.compose.material3.ExperimentalMaterial3Api\nimport androidx.compose.material3.HorizontalDivider\nimport androidx.compose.material3.MaterialTheme\nimport androidx.compose.material3.Scaffold\nimport androidx.compose.material3.Text\nimport androidx.compose.material3.TopAppBarDefaults\nimport androidx.compose.material3.rememberTopAppBarState\nimport androidx.compose.runtime.Composable\nimport androidx.compose.runtime.collectAsState\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.graphics.Color\nimport androidx.compose.ui.input.nestedscroll.nestedScroll\nimport androidx.compose.ui.text.font.FontWeight\nimport androidx.compose.ui.unit.dp\nimport androidx.hilt.navigation.compose.hiltViewModel\nimport com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction\nimport com.irinaabdriaeva.project.testappcommbank.account.ui.viewmodels.AccountViewModel\nimport com.irinaabdriaeva.project.testappcommbank.ui.theme.CbaBlack\nimport com.irinaabdriaeva.project.testappcommbank.ui.theme.CbaGrey\n\n\n@OptIn(ExperimentalMaterial3Api::class)\n@Composable\nfun AccountScreen(\n    viewModel: AccountViewModel = hiltViewModel(),\n    onTransactionClick: (Transaction) -> Unit\n) {\n\n    val account = viewModel.account.collectAsState().value\n    val transactions = viewModel.transactions.collectAsState().value\n    // Define the scroll behavior for the top bar\n    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())\n\n    // Scaffold to manage the layout with a top bar and a content body\n    Scaffold(\n        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),\n        topBar = {\n            CenterAlignedTopAppBar(\n                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(\n                    containerColor = MaterialTheme.colorScheme.background,\n                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer\n                ),\n                title = {\n                    Text(\n                        text = account.accountName,\n                        style = MaterialTheme.typography.titleLarge,\n                        color = Color.Black,\n                        fontWeight = FontWeight.Bold\n                    )\n                },\n                scrollBehavior = scrollBehavior\n            )\n        },\n        content = { innerPadding ->\n            Column(\n                modifier = Modifier\n                    .fillMaxSize()\n                    .padding(innerPadding)\n            ) {\n                HorizontalDivider(color = Color.LightGray, thickness = 2.dp)\n                // Non-scrollable content (Available, Balance, Pending)\n                AccountBalanceSection(\n                    available = account.available,\n                    balance = account.balance,\n                    pending = \"200\" //todo fix that to show the correct data\n                )\n                HorizontalDivider(color = Color.LightGray, thickness = 2.dp)\n                AccountDetailsSection(account.bsb, account.accountNumber)\n                HorizontalDivider(color = Color.LightGray, thickness = 2.dp)\n                // Scrollable content (LazyColumn with onClick behavior)\n                LazyTransactionList(onTransactionClick = { transactionId ->\n                    // Handle transaction item click\n                    println(\"Clicked transaction ID: $transactionId\")\n                })\n                HorizontalDivider(color = Color.LightGray, thickness = 2.dp)\n            }\n        }\n    )\n}\n\n@Composable\nfun AccountDetailsSection(bsb: String, accountNumber: String) {\n    Row(\n        modifier = Modifier\n            .fillMaxWidth()\n            .padding(16.dp)\n    ) {\n        Text(\n            text = \"BSN \",\n            style = MaterialTheme.typography.bodyLarge,\n            color = CbaBlack,\n            fontWeight = FontWeight.SemiBold\n        )\n        Text(bsb, style = MaterialTheme.typography.bodyLarge, color = CbaGrey)\n        Text(\n            text = \" Account \",\n            style = MaterialTheme.typography.bodyLarge,\n            color = CbaBlack,\n            fontWeight = FontWeight.SemiBold\n        )\n        Text(accountNumber, style = MaterialTheme.typography.bodyLarge, color = CbaGrey)\n    }\n\n}\n\n@Composable\nfun AccountBalanceSection(available: String, balance: String, pending: String) {\n    Column(\n        modifier = Modifier\n            .fillMaxWidth()\n            .padding(16.dp)\n    ) {\n        Column(modifier = Modifier.padding(top = 12.dp)) {\n            Text(\n                text = \"Available\",\n                color = CbaGrey,\n                style = MaterialTheme.typography.titleLarge\n            )\n            Text(\n                text = \"$$available\",\n                style = MaterialTheme.typography.displaySmall,\n                fontWeight = FontWeight.SemiBold\n            )\n        }\n        Row(\n            modifier = Modifier\n                .fillMaxWidth()\n                .padding(vertical = 4.dp),\n        ) {\n            Text(\n                text = \"Balance \",\n                style = MaterialTheme.typography.bodyMedium,\n                color = CbaGrey\n            )\n            Text(\n                text = \"$$balance\",\n                style = MaterialTheme.typography.bodyMedium,\n                color = CbaBlack,\n                fontWeight = FontWeight.SemiBold\n            )\n        }\n\n        Row(\n            modifier = Modifier\n                .fillMaxWidth()\n                .padding(vertical = 4.dp),\n        ) {\n            Text(\n                text = \"Pending \", style = MaterialTheme.typography.bodyMedium,\n                color = CbaGrey\n            )\n            Text(\n                text = \"$$pending\",\n                style = MaterialTheme.typography.bodyMedium,\n                fontWeight = FontWeight.SemiBold\n            )\n        }\n    }\n}\n\n@Composable\nfun LazyTransactionList(onTransactionClick: (String) -> Unit) {\n    LazyColumn(\n        modifier = Modifier.fillMaxSize(),\n        contentPadding = PaddingValues(16.dp)\n    ) {\n        items(50) { index ->\n            TransactionItem(\n                transactionId = \"Transaction #$index\",\n                onClick = onTransactionClick\n            )\n        }\n    }\n}\n\n@Composable\nfun TransactionItem(transactionId: String, onClick: (String) -> Unit) {\n    Card(\n        modifier = Modifier\n            .fillMaxWidth()\n            .padding(vertical = 8.dp)\n            .clickable { onClick(transactionId) },\n        elevation = CardDefaults.cardElevation(\n            defaultElevation = 10.dp\n        )\n    ) {\n        Text(\n            text = transactionId,\n            modifier = Modifier.padding(16.dp),\n            style = MaterialTheme.typography.bodyMedium\n        )\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt
+--- a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt	(revision 5aa47587d136d9d4f9c066c3596f05991b0b11cf)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt	(date 1728196740726)
+@@ -1,14 +1,18 @@
+ package com.irinaabdriaeva.project.testappcommbank.account.ui.screens
+ 
+ import android.R.style
++import androidx.compose.foundation.Image
+ import androidx.compose.foundation.clickable
+ import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Column
+ import androidx.compose.foundation.layout.PaddingValues
+ import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.Spacer
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.size
++import androidx.compose.foundation.layout.width
+ import androidx.compose.foundation.lazy.LazyColumn
+ import androidx.compose.material3.Card
+ import androidx.compose.material3.CardDefaults
+@@ -22,14 +26,18 @@
+ import androidx.compose.material3.rememberTopAppBarState
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.collectAsState
++import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.graphics.Color
+ import androidx.compose.ui.input.nestedscroll.nestedScroll
++import androidx.compose.ui.res.painterResource
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.dp
++import androidx.compose.ui.unit.sp
+ import androidx.hilt.navigation.compose.hiltViewModel
+ import com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction
+ import com.irinaabdriaeva.project.testappcommbank.account.ui.viewmodels.AccountViewModel
++import com.irinaabdriaeva.project.testappcommbank.account.utils.getIconForCategory
+ import com.irinaabdriaeva.project.testappcommbank.ui.theme.CbaBlack
+ import com.irinaabdriaeva.project.testappcommbank.ui.theme.CbaGrey
+ 
+@@ -83,11 +91,24 @@
+                 AccountDetailsSection(account.bsb, account.accountNumber)
+                 HorizontalDivider(color = Color.LightGray, thickness = 2.dp)
+                 // Scrollable content (LazyColumn with onClick behavior)
++                LazyColumn {
++                    transactions.forEach { transactionGroup ->
++                        // Use stickyHeader from Accompanist
++                        item {
++                            DateHeader(transactionGroup.effectiveDate, transactionGroup .relativeDate)
++                        }
++
++                        // Display individual transactions
++                        items(transactionGroup.transactions) { transaction ->
++                            TransactionItem(transaction = transaction)
++                        }
++                    }
++                }
+                 LazyTransactionList(onTransactionClick = { transactionId ->
+                     // Handle transaction item click
+                     println("Clicked transaction ID: $transactionId")
+                 })
+-                HorizontalDivider(color = Color.LightGray, thickness = 2.dp)
++//                HorizontalDivider(color = Color.LightGray, thickness = 2.dp)
+             }
+         }
+     )
+@@ -194,10 +215,7 @@
+         modifier = Modifier
+             .fillMaxWidth()
+             .padding(vertical = 8.dp)
+-            .clickable { onClick(transactionId) },
+-        elevation = CardDefaults.cardElevation(
+-            defaultElevation = 10.dp
+-        )
++            .clickable { onClick(transactionId) }
+     ) {
+         Text(
+             text = transactionId,
+@@ -205,4 +223,60 @@
+             style = MaterialTheme.typography.bodyMedium
+         )
+     }
++}
++
++@Composable
++fun DateHeader(date: String, relativeDate: String) {
++    Column(
++        modifier = Modifier
++            .fillMaxWidth()
++            .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
++    ) {
++        Text(text = date, fontWeight = FontWeight.Bold)
++        Text(text = relativeDate, fontSize = 12.sp)
++    }
++}
++
++@Composable
++fun TransactionItem(transaction: Transaction) {
++    Row(
++        modifier = Modifier
++            .fillMaxWidth()
++            .padding(16.dp),
++        verticalAlignment = Alignment.CenterVertically
++    ) {
++        // Transaction icon based on category
++        val iconRes = getIconForCategory(transaction.category)
++        Image(
++            painter = painterResource(id = iconRes),
++            contentDescription = transaction.category,
++            modifier = Modifier.size(40.dp)
++        )
++
++        Spacer(modifier = Modifier.width(16.dp))
++
++        Column(
++            modifier = Modifier.weight(1f)
++        ) {
++            if (transaction.isPending) {
++                Text(
++                    text = "PENDING",
++                    fontWeight = FontWeight.Bold,
++                    color = Color.Red,
++                    fontSize = 14.sp
++                )
++            }
++
++            Text(
++                text = transaction.description,
++                fontSize = 14.sp
++            )
++        }
++
++        Text(
++            text = "$${transaction.amount}",
++            fontWeight = FontWeight.Bold,
++            fontSize = 16.sp
++        )
++    }
+ }
+\ No newline at end of file
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/viewmodels/AccountViewModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.irinaabdriaeva.project.testappcommbank.account.ui.viewmodels\n\nimport androidx.lifecycle.ViewModel\nimport androidx.lifecycle.viewModelScope\nimport com.irinaabdriaeva.project.testappcommbank.account.data.model.Account\nimport com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction\nimport com.irinaabdriaeva.project.testappcommbank.account.data.repository.AccountRepository\nimport dagger.hilt.android.lifecycle.HiltViewModel\nimport kotlinx.coroutines.flow.MutableStateFlow\nimport kotlinx.coroutines.flow.StateFlow\nimport kotlinx.coroutines.launch\nimport javax.inject.Inject\n\n@HiltViewModel\nclass AccountViewModel @Inject constructor(\n    private val accountRepository: AccountRepository\n) : ViewModel() {\n\n    private val _account = MutableStateFlow(Account(\"\", \"\", \"\", \"\", \"\"))\n    val account: StateFlow<Account> = _account\n\n    private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())\n    val transactions: StateFlow<List<Transaction>> = _transactions\n\n    init {\n        viewModelScope.launch {\n            _account.value = accountRepository.getAccountData()\n            _transactions.value =\n                accountRepository.getTransactions().sortedByDescending { it.effectiveDate }\n        }\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/viewmodels/AccountViewModel.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/viewmodels/AccountViewModel.kt
+--- a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/viewmodels/AccountViewModel.kt	(revision 5aa47587d136d9d4f9c066c3596f05991b0b11cf)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/viewmodels/AccountViewModel.kt	(date 1728197925457)
+@@ -4,7 +4,11 @@
+ import androidx.lifecycle.viewModelScope
+ import com.irinaabdriaeva.project.testappcommbank.account.data.model.Account
+ import com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction
++import com.irinaabdriaeva.project.testappcommbank.account.data.model.TransactionGroup
+ import com.irinaabdriaeva.project.testappcommbank.account.data.repository.AccountRepository
++import com.irinaabdriaeva.project.testappcommbank.account.ui.usecases.GetAccountDetailsUseCase
++import com.irinaabdriaeva.project.testappcommbank.account.ui.usecases.GetTransactionsUseCase
++import com.irinaabdriaeva.project.testappcommbank.account.utils.DateUtils
+ import dagger.hilt.android.lifecycle.HiltViewModel
+ import kotlinx.coroutines.flow.MutableStateFlow
+ import kotlinx.coroutines.flow.StateFlow
+@@ -13,20 +17,48 @@
+ 
+ @HiltViewModel
+ class AccountViewModel @Inject constructor(
+-    private val accountRepository: AccountRepository
++    private val getTransactionsUseCase: GetTransactionsUseCase,
++    private val getAccountDetailsUseCase: GetAccountDetailsUseCase
+ ) : ViewModel() {
+ 
+-    private val _account = MutableStateFlow(Account("", "", "", "", ""))
+-    val account: StateFlow<Account> = _account
++    // Flow for account details
++    private val _accountInfo = MutableStateFlow<Account?>(null)
++    val accountInfo: StateFlow<Account?> = _accountInfo
+ 
+-    private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())
+-    val transactions: StateFlow<List<Transaction>> = _transactions
++    // Flow for transactions grouped by date
++    private val _transactions = MutableStateFlow<List<TransactionGroup>>(emptyList())
++    val transactions: StateFlow<List<TransactionGroup>> = _transactions
++
++    // Flow to indicate loading state
++    private val _isLoading = MutableStateFlow(false)
++    val isLoading: StateFlow<Boolean> = _isLoading
+ 
+     init {
++        loadTransactionData()
++    }
++
++    private fun loadTransactionData() {
+         viewModelScope.launch {
+-            _account.value = accountRepository.getAccountData()
+-            _transactions.value =
+-                accountRepository.getTransactions().sortedByDescending { it.effectiveDate }
++            _isLoading.value = true
++            // Load account details
++            _accountInfo.value = getAccountDetailsUseCase()
++
++            // Load and group transactions by date
++            val transactions = getTransactionsUseCase()
++            _transactions.value = DateUtils.groupTransactionsByDate(transactions)
++
++            _isLoading.value = false
++        }
++    }
++
++    fun refreshData() {
++        viewModelScope.launch {
++            _isLoading.value = true
++            // Re-fetch the transactions and account info
++            _transactions.value = DateUtils.groupTransactionsByDate(getTransactionsUseCase())
++            _accountInfo.value = getAccountDetailsUseCase()
++
++            _isLoading.value = false
+         }
+     }
+ }
+\ No newline at end of file
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/JsonUtils.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/JsonUtils.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/JsonFileReader.kt
+rename from app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/JsonUtils.kt
+rename to app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/JsonFileReader.kt
+--- a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/JsonUtils.kt	(revision 5aa47587d136d9d4f9c066c3596f05991b0b11cf)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/JsonFileReader.kt	(date 1728198280954)
+@@ -4,7 +4,7 @@
+ import java.io.IOException
+ import java.io.InputStream
+ 
+-object JsonUtils {
++object JsonFileReader {
+ 
+     fun loadJSONFromAsset(context: Context, fileName: String): String? {
+         return try {
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/repository/AccountRepository.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.irinaabdriaeva.project.testappcommbank.account.data.repository\n\nimport android.content.Context\nimport com.google.gson.Gson\nimport com.google.gson.reflect.TypeToken\nimport com.irinaabdriaeva.project.testappcommbank.account.data.model.Account\nimport com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction\nimport com.irinaabdriaeva.project.testappcommbank.account.utils.JsonUtils\nimport org.json.JSONObject\nimport javax.inject.Inject\n\nclass AccountRepository @Inject constructor(\n    private val context: Context,\n    private val gson: Gson\n) {\n    suspend fun getAccountData(): Account {\n        val jsonString = JsonUtils.loadJSONFromAsset(context, \"exercise.json\")\n        val jsonObject = JSONObject(jsonString)\n        return gson.fromJson(jsonObject.getJSONObject(\"account\").toString(), Account::class.java)\n    }\n\n    suspend fun getTransactions(): List<Transaction> {\n        val jsonString = JsonUtils.loadJSONFromAsset(context, \"exercise.json\")\n        val jsonObject = JSONObject(jsonString)\n        val transactions = jsonObject.getJSONArray(\"transactions\")\n        val type = object : TypeToken<List<Transaction>>() {}.type\n        return gson.fromJson(transactions.toString(), type)\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/repository/AccountRepository.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/repository/AccountRepository.kt
+--- a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/repository/AccountRepository.kt	(revision 5aa47587d136d9d4f9c066c3596f05991b0b11cf)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/repository/AccountRepository.kt	(date 1728198280951)
+@@ -1,29 +1,19 @@
+ package com.irinaabdriaeva.project.testappcommbank.account.data.repository
+ 
+-import android.content.Context
+-import com.google.gson.Gson
+-import com.google.gson.reflect.TypeToken
++import com.irinaabdriaeva.project.testappcommbank.account.data.local.LocalDataSource
+ import com.irinaabdriaeva.project.testappcommbank.account.data.model.Account
+ import com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction
+-import com.irinaabdriaeva.project.testappcommbank.account.utils.JsonUtils
+-import org.json.JSONObject
+ import javax.inject.Inject
+ 
+-class AccountRepository @Inject constructor(
+-    private val context: Context,
+-    private val gson: Gson
+-) {
+-    suspend fun getAccountData(): Account {
+-        val jsonString = JsonUtils.loadJSONFromAsset(context, "exercise.json")
+-        val jsonObject = JSONObject(jsonString)
+-        return gson.fromJson(jsonObject.getJSONObject("account").toString(), Account::class.java)
++class AccountRepository @Inject constructor(private val localDataSource: LocalDataSource) {
++
++    // Fetch account details from the data source
++    suspend fun getAccountDetails(): Account {
++        return localDataSource.getAccountDetails()
+     }
+ 
++    // Fetch transactions from the data source
+     suspend fun getTransactions(): List<Transaction> {
+-        val jsonString = JsonUtils.loadJSONFromAsset(context, "exercise.json")
+-        val jsonObject = JSONObject(jsonString)
+-        val transactions = jsonObject.getJSONArray("transactions")
+-        val type = object : TypeToken<List<Transaction>>() {}.type
+-        return gson.fromJson(transactions.toString(), type)
++        return localDataSource.getTransactionsGroupedByDate().flatMap { it.transactions }
+     }
+ }
+\ No newline at end of file
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/di/AccountModule.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.irinaabdriaeva.project.testappcommbank.account.di\n\nimport android.content.Context\nimport com.google.gson.Gson\nimport com.irinaabdriaeva.project.testappcommbank.account.data.repository.AccountRepository\nimport dagger.Module\nimport dagger.Provides\nimport dagger.hilt.InstallIn\nimport dagger.hilt.android.qualifiers.ApplicationContext\nimport dagger.hilt.components.SingletonComponent\nimport javax.inject.Singleton\n\n@Module\n@InstallIn(SingletonComponent::class)\nobject AccountModule {\n\n    @Provides\n    @Singleton\n    fun provideGson(): Gson {\n        return Gson()\n    }\n\n    @Provides\n    @Singleton\n    fun provideAccountRepository(\n        @ApplicationContext context: Context,\n        gson: Gson\n    ): AccountRepository {\n        return AccountRepository(context, gson)\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/di/AccountModule.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/di/AccountModule.kt
+--- a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/di/AccountModule.kt	(revision 5aa47587d136d9d4f9c066c3596f05991b0b11cf)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/di/AccountModule.kt	(date 1728198179451)
+@@ -2,6 +2,7 @@
+ 
+ import android.content.Context
+ import com.google.gson.Gson
++import com.irinaabdriaeva.project.testappcommbank.account.data.local.LocalDataSource
+ import com.irinaabdriaeva.project.testappcommbank.account.data.repository.AccountRepository
+ import dagger.Module
+ import dagger.Provides
+@@ -12,20 +13,33 @@
+ 
+ @Module
+ @InstallIn(SingletonComponent::class)
+-object AccountModule {
++object AppModule {
++
++    // Provide the LocalDataSource dependency
++    @Provides
++    @Singleton
++    fun provideLocalDataSource(@ApplicationContext context: Context): LocalDataSource {
++        return LocalDataSource(context)
++    }
+ 
++    // Provide the TransactionRepository dependency
++    @Provides
++    @Singleton
++    fun provideTransactionRepository(localDataSource: LocalDataSource): TransactionRepository {
++        return TransactionRepository(localDataSource)
++    }
++
++    // Provide the GetTransactionsUseCase dependency
+     @Provides
+     @Singleton
+-    fun provideGson(): Gson {
+-        return Gson()
++    fun provideGetTransactionsUseCase(repository: TransactionRepository): GetTransactionsUseCase {
++        return GetTransactionsUseCase(repository)
+     }
+ 
++    // Provide the GetAccountDetailsUseCase dependency
+     @Provides
+     @Singleton
+-    fun provideAccountRepository(
+-        @ApplicationContext context: Context,
+-        gson: Gson
+-    ): AccountRepository {
+-        return AccountRepository(context, gson)
++    fun provideGetAccountDetailsUseCase(repository: TransactionRepository): GetAccountDetailsUseCase {
++        return GetAccountDetailsUseCase(repository)
+     }
+ }
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AndroidLayouts\">\n    <shared>\n      <config />\n    </shared>\n  </component>\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"NONE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"b8e0c259-b89b-40b4-9ac5-78120e2aa04c\" name=\"Changes\" comment=\"\">\n      <change beforePath=\"$PROJECT_DIR$/.gradle/8.7/executionHistory/executionHistory.bin\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gradle/8.7/executionHistory/executionHistory.bin\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.gradle/8.7/executionHistory/executionHistory.lock\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gradle/8.7/executionHistory/executionHistory.lock\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.bin\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.bin\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.lock\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.lock\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.gradle/file-system.probe\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gradle/file-system.probe\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/ui/theme/Color.kt\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/ui/theme/Color.kt\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"ClangdSettings\">\n    <option name=\"formatViaClangd\" value=\"false\" />\n  </component>\n  <component name=\"ExecutionTargetManager\" SELECTED_TARGET=\"device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=/Users/irinaabdriaeva/.android/avd/Pixel_4_XL_API_33.avd)]\" />\n  <component name=\"ExternalProjectsData\">\n    <projectState path=\"$PROJECT_DIR$\">\n      <ProjectState />\n    </projectState>\n  </component>\n  <component name=\"ExternalProjectsManager\">\n    <system id=\"GRADLE\">\n      <state>\n        <task path=\"$PROJECT_DIR$/app\">\n          <activation />\n        </task>\n        <projects_view>\n          <tree_state>\n            <expand>\n              <path>\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\n                <item name=\"TestAppCommBank\" type=\"f1a62948:ProjectNode\" />\n              </path>\n              <path>\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\n                <item name=\"TestAppCommBank\" type=\"f1a62948:ProjectNode\" />\n                <item name=\"app\" type=\"2d1252cf:ModuleNode\" />\n              </path>\n              <path>\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\n                <item name=\"TestAppCommBank\" type=\"f1a62948:ProjectNode\" />\n                <item name=\"app\" type=\"2d1252cf:ModuleNode\" />\n                <item name=\"Tasks\" type=\"e4a08cd1:TasksNode\" />\n              </path>\n              <path>\n                <item name=\"\" type=\"6a2764b6:ExternalProjectsStructure$RootNode\" />\n                <item name=\"TestAppCommBank\" type=\"f1a62948:ProjectNode\" />\n                <item name=\"app\" type=\"2d1252cf:ModuleNode\" />\n                <item name=\"Tasks\" type=\"e4a08cd1:TasksNode\" />\n                <item name=\"other\" type=\"c8890929:TasksNode$1\" />\n              </path>\n            </expand>\n            <select />\n          </tree_state>\n        </projects_view>\n      </state>\n    </system>\n  </component>\n  <component name=\"FileTemplateManagerImpl\">\n    <option name=\"RECENT_TEMPLATES\">\n      <list>\n        <option value=\"Kotlin Data Class\" />\n        <option value=\"Kotlin Class\" />\n      </list>\n    </option>\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"ProjectColorInfo\">{\n  &quot;associatedIndex&quot;: 1\n}</component>\n  <component name=\"ProjectId\" id=\"2msVPt36c4cjvrapTjAysGcWaKX\" />\n  <component name=\"ProjectLevelVcsManager\">\n    <ConfirmationsSetting value=\"2\" id=\"Add\" />\n  </component>\n  <component name=\"ProjectViewState\">\n    <option name=\"autoscrollFromSource\" value=\"true\" />\n    <option name=\"autoscrollToSource\" value=\"true\" />\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\">{\n  &quot;keyToString&quot;: {\n    &quot;Android App.app.executor&quot;: &quot;Run&quot;,\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,\n    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,\n    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,\n    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,\n    &quot;last_opened_file_path&quot;: &quot;/Users/irinaabdriaeva/Documents/android_projects/commbank&quot;\n  },\n  &quot;keyToStringList&quot;: {\n    &quot;kotlin-gradle-user-dirs&quot;: [\n      &quot;/Users/irinaabdriaeva/.gradle&quot;\n    ]\n  }\n}</component>\n  <component name=\"RunManager\">\n    <configuration name=\"app\" type=\"AndroidRunConfigurationType\" factoryName=\"Android App\" activateToolWindowBeforeRun=\"false\">\n      <module name=\"TestAppCommBank.app.main\" />\n      <option name=\"DEPLOY\" value=\"true\" />\n      <option name=\"DEPLOY_APK_FROM_BUNDLE\" value=\"false\" />\n      <option name=\"DEPLOY_AS_INSTANT\" value=\"false\" />\n      <option name=\"ARTIFACT_NAME\" value=\"\" />\n      <option name=\"PM_INSTALL_OPTIONS\" value=\"\" />\n      <option name=\"ALL_USERS\" value=\"false\" />\n      <option name=\"ALWAYS_INSTALL_WITH_PM\" value=\"false\" />\n      <option name=\"CLEAR_APP_STORAGE\" value=\"false\" />\n      <option name=\"DYNAMIC_FEATURES_DISABLED_LIST\" value=\"\" />\n      <option name=\"ACTIVITY_EXTRA_FLAGS\" value=\"\" />\n      <option name=\"MODE\" value=\"default_activity\" />\n      <option name=\"CLEAR_LOGCAT\" value=\"false\" />\n      <option name=\"SHOW_LOGCAT_AUTOMATICALLY\" value=\"false\" />\n      <option name=\"TARGET_SELECTION_MODE\" value=\"DEVICE_AND_SNAPSHOT_COMBO_BOX\" />\n      <option name=\"SELECTED_CLOUD_MATRIX_CONFIGURATION_ID\" value=\"-1\" />\n      <option name=\"SELECTED_CLOUD_MATRIX_PROJECT_ID\" value=\"\" />\n      <option name=\"DEBUGGER_TYPE\" value=\"Auto\" />\n      <Auto>\n        <option name=\"USE_JAVA_AWARE_DEBUGGER\" value=\"false\" />\n        <option name=\"SHOW_STATIC_VARS\" value=\"true\" />\n        <option name=\"WORKING_DIR\" value=\"\" />\n        <option name=\"TARGET_LOGGING_CHANNELS\" value=\"lldb process:gdb-remote packets\" />\n        <option name=\"SHOW_OPTIMIZED_WARNING\" value=\"true\" />\n        <option name=\"ATTACH_ON_WAIT_FOR_DEBUGGER\" value=\"false\" />\n        <option name=\"DEBUG_SANDBOX_SDK\" value=\"false\" />\n      </Auto>\n      <Hybrid>\n        <option name=\"USE_JAVA_AWARE_DEBUGGER\" value=\"false\" />\n        <option name=\"SHOW_STATIC_VARS\" value=\"true\" />\n        <option name=\"WORKING_DIR\" value=\"\" />\n        <option name=\"TARGET_LOGGING_CHANNELS\" value=\"lldb process:gdb-remote packets\" />\n        <option name=\"SHOW_OPTIMIZED_WARNING\" value=\"true\" />\n        <option name=\"ATTACH_ON_WAIT_FOR_DEBUGGER\" value=\"false\" />\n        <option name=\"DEBUG_SANDBOX_SDK\" value=\"false\" />\n      </Hybrid>\n      <Java>\n        <option name=\"ATTACH_ON_WAIT_FOR_DEBUGGER\" value=\"false\" />\n        <option name=\"DEBUG_SANDBOX_SDK\" value=\"false\" />\n      </Java>\n      <Native>\n        <option name=\"USE_JAVA_AWARE_DEBUGGER\" value=\"false\" />\n        <option name=\"SHOW_STATIC_VARS\" value=\"true\" />\n        <option name=\"WORKING_DIR\" value=\"\" />\n        <option name=\"TARGET_LOGGING_CHANNELS\" value=\"lldb process:gdb-remote packets\" />\n        <option name=\"SHOW_OPTIMIZED_WARNING\" value=\"true\" />\n        <option name=\"ATTACH_ON_WAIT_FOR_DEBUGGER\" value=\"false\" />\n        <option name=\"DEBUG_SANDBOX_SDK\" value=\"false\" />\n      </Native>\n      <Profilers>\n        <option name=\"ADVANCED_PROFILING_ENABLED\" value=\"false\" />\n        <option name=\"STARTUP_PROFILING_ENABLED\" value=\"false\" />\n        <option name=\"STARTUP_CPU_PROFILING_ENABLED\" value=\"false\" />\n        <option name=\"STARTUP_CPU_PROFILING_CONFIGURATION_NAME\" value=\"Java/Kotlin Method Sample (legacy)\" />\n        <option name=\"STARTUP_NATIVE_MEMORY_PROFILING_ENABLED\" value=\"false\" />\n        <option name=\"NATIVE_MEMORY_SAMPLE_RATE_BYTES\" value=\"2048\" />\n      </Profilers>\n      <option name=\"DEEP_LINK\" value=\"\" />\n      <option name=\"ACTIVITY_CLASS\" value=\"\" />\n      <option name=\"SEARCH_ACTIVITY_IN_GLOBAL_SCOPE\" value=\"false\" />\n      <option name=\"SKIP_ACTIVITY_VALIDATION\" value=\"false\" />\n      <method v=\"2\">\n        <option name=\"Android.Gradle.BeforeRunTask\" enabled=\"true\" />\n      </method>\n    </configuration>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"b8e0c259-b89b-40b4-9ac5-78120e2aa04c\" name=\"Changes\" comment=\"\" />\n      <created>1727865249848</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1727865249848</updated>\n    </task>\n    <servers />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 5aa47587d136d9d4f9c066c3596f05991b0b11cf)
++++ b/.idea/workspace.xml	(date 1728198179800)
+@@ -10,15 +10,23 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="b8e0c259-b89b-40b4-9ac5-78120e2aa04c" name="Changes" comment="">
++      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/local/LocalDataSource.kt" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/model/TransactionGroup.kt" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/usecases/GetAccountDetailsUseCase.kt" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/usecases/GetTransactionsUseCase.kt" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/DateUtils.kt" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/IconUtils.kt" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.gradle/8.7/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.7/executionHistory/executionHistory.bin" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.gradle/8.7/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.7/executionHistory/executionHistory.lock" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.bin" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.7/fileHashes/fileHashes.lock" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.gradle/8.7/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.7/fileHashes/resourceHashesCache.bin" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/repository/AccountRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/repository/AccountRepository.kt" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/di/AccountModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/di/AccountModule.kt" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/screens/AccountScreen.kt" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/ui/theme/Color.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/ui/theme/Color.kt" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/viewmodels/AccountViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/viewmodels/AccountViewModel.kt" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -76,6 +84,7 @@
+     <option name="RECENT_TEMPLATES">
+       <list>
+         <option value="Kotlin Data Class" />
++        <option value="Kotlin Object" />
+         <option value="Kotlin Class" />
+       </list>
+     </option>
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/DateUtils.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/DateUtils.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/DateUtils.kt
+new file mode 100644
+--- /dev/null	(date 1728196088547)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/DateUtils.kt	(date 1728196088547)
+@@ -0,0 +1,41 @@
++package com.irinaabdriaeva.project.testappcommbank.account.utils
++
++import com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction
++import com.irinaabdriaeva.project.testappcommbank.account.data.model.TransactionGroup
++import java.text.SimpleDateFormat
++import java.util.*
++import java.util.concurrent.TimeUnit
++
++object DateUtils {
++
++    fun groupTransactionsByDate(transactions: List<Transaction>): List<TransactionGroup> {
++        val grouped = transactions.groupBy { it.effectiveDate }
++
++        return grouped.map { (date, transactionsForDate) ->
++            val relativeDate = getRelativeDate(date)
++            TransactionGroup(date = formatDate(date), relativeDate = relativeDate, transactions = transactionsForDate)
++        }.sortedByDescending { it.date }
++    }
++
++    private fun formatDate(date: String): String {
++        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
++        val parsedDate = sdf.parse(date)
++        val dateFormat = SimpleDateFormat("EEE d MMM", Locale.getDefault())
++        return dateFormat.format(parsedDate!!)
++    }
++
++    fun getRelativeDate(date: String): String {
++        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
++        val transactionDate = sdf.parse(date) ?: return ""
++        val today = Date()
++
++        val diffInMillis = today.time - transactionDate.time
++        val daysAgo = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS)
++
++        return when {
++            daysAgo == 0L -> "Today"
++            daysAgo == 1L -> "Yesterday"
++            else -> "$daysAgo days ago"
++        }
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/usecases/GetTransactionsUseCase.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/usecases/GetTransactionsUseCase.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/usecases/GetTransactionsUseCase.kt
+new file mode 100644
+--- /dev/null	(date 1728198179453)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/usecases/GetTransactionsUseCase.kt	(date 1728198179453)
+@@ -0,0 +1,11 @@
++package com.irinaabdriaeva.project.testappcommbank.account.ui.usecases
++
++import com.irinaabdriaeva.project.testappcommbank.account.data.model.Transaction
++import com.irinaabdriaeva.project.testappcommbank.account.data.repository.AccountRepository
++
++class GetTransactionsUseCase(private val repository: AccountRepository) {
++
++    suspend operator fun invoke(): List<Transaction> {
++        return repository.getTransactions() // Fetch transactions from the repository
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/model/TransactionGroup.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/model/TransactionGroup.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/model/TransactionGroup.kt
+new file mode 100644
+--- /dev/null	(date 1728196042773)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/model/TransactionGroup.kt	(date 1728196042773)
+@@ -0,0 +1,7 @@
++package com.irinaabdriaeva.project.testappcommbank.account.data.model
++
++data class TransactionGroup(
++    val date: String,
++    val relativeDate: String,
++    val transactions: List<Transaction>
++)
+\ No newline at end of file
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/local/LocalDataSource.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/local/LocalDataSource.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/local/LocalDataSource.kt
+new file mode 100644
+--- /dev/null	(date 1728198400026)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/data/local/LocalDataSource.kt	(date 1728198400026)
+@@ -0,0 +1,32 @@
++package com.irinaabdriaeva.project.testappcommbank.account.data.local
++
++import android.content.Context
++import com.irinaabdriaeva.project.testappcommbank.account.data.model.Account
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.withContext
++import javax.inject.Inject
++class LocalDataSource(private val context: Context) {
++
++    private val gson = Gson()
++
++    // Function to get account details using Gson
++    suspend fun getAccountDetails(): Account = withContext(Dispatchers.IO) {
++        val json = readJsonFromAssets("exercise.json")
++        val jsonObject = gson.fromJson(json, Account::class.java)
++        return@withContext jsonObject.account
++    }
++
++    // Function to get a list of transactions using Gson
++    suspend fun getTransactionsGroupedByDate(): List<Transaction> = withContext(Dispatchers.IO) {
++        val json = readJsonFromAssets("exercise.json")
++        val jsonObject = gson.fromJson(json, ExerciseData::class.java)
++        return@withContext jsonObject.transactions
++    }
++
++    // Helper function to read the JSON file from assets folder
++    private fun readJsonFromAssets(fileName: String): String {
++        val inputStream = context.assets.open(fileName)
++        val bufferedReader = BufferedReader(InputStreamReader(inputStream))
++        return bufferedReader.use { it.readText() }
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/IconUtils.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/IconUtils.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/IconUtils.kt
+new file mode 100644
+--- /dev/null	(date 1728196626248)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/utils/IconUtils.kt	(date 1728196626248)
+@@ -0,0 +1,22 @@
++package com.irinaabdriaeva.project.testappcommbank.account.utils
++
++import com.irinaabdriaeva.project.testappcommbank.R
++
++fun getIconForCategory(category: String): Int {
++
++    return when (category) {
++        "shopping" -> R.drawable.icon_category_shopping
++        "business" -> R.drawable.icon_category_business
++        "entertainment" -> R.drawable.icon_category_entertainment
++        "groceries" -> R.drawable.icon_category_groceries
++        "transport" -> R.drawable.icon_category_transportation
++        "education" -> R.drawable.icon_category_education
++        "cards" -> R.drawable.icon_category_cards
++        "cash" -> R.drawable.icon_category_cash
++        "travel" -> R.drawable.icon_category_travel
++        "eating_out" -> R.drawable.icon_category_eating_out
++        "eating_out" -> R.drawable.icon_category_eating_out
++
++        else -> R.drawable.icon_category_uncategorised
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/usecases/GetAccountDetailsUseCase.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/usecases/GetAccountDetailsUseCase.kt b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/usecases/GetAccountDetailsUseCase.kt
+new file mode 100644
+--- /dev/null	(date 1728197838759)
++++ b/app/src/main/java/com/irinaabdriaeva/project/testappcommbank/account/ui/usecases/GetAccountDetailsUseCase.kt	(date 1728197838759)
+@@ -0,0 +1,11 @@
++package com.irinaabdriaeva.project.testappcommbank.account.ui.usecases
++
++import com.irinaabdriaeva.project.testappcommbank.account.data.model.Account
++
++class GetAccountDetailsUseCase(private val repository: TransactionRepository) {
++
++    // Function to invoke the use case
++    suspend operator fun invoke(): Account {
++        return repository.getAccountDetails() // Fetch account details from the repository
++    }
++}
+\ No newline at end of file
