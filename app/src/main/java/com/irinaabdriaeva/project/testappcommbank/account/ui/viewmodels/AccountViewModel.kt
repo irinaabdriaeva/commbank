@@ -1,6 +1,6 @@
 package com.irinaabdriaeva.project.testappcommbank.account.ui.viewmodels
 
-import androidx.compose.material3.rememberTopAppBarState
+import androidx.annotation.OpenForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.irinaabdriaeva.project.testappcommbank.account.data.model.Account
@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OpenForTesting
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val getTransactionsUseCase: GetTransactionsUseCase,
@@ -34,6 +35,12 @@ class AccountViewModel @Inject constructor(
         loadData()
     }
 
+    fun getTransactionById(transactionId: String?): Transaction? {
+        return transactions.value
+            .flatMap { it.transactions }
+            .find { it.id == transactionId }
+    }
+
     private fun getPendingAmount(transactions: List<Transaction>): Double {
         val amount = transactions
             .filter { it.isPending }
@@ -41,7 +48,7 @@ class AccountViewModel @Inject constructor(
         return amount
     }
 
-    private fun loadData() {
+    fun loadData() {
         viewModelScope.launch {
             // Load account details
             _account.value = getAccountDetailsUseCase()

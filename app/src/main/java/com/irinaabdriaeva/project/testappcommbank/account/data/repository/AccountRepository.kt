@@ -13,13 +13,13 @@ class AccountRepository @Inject constructor(
     private val context: Context,
     private val gson: Gson
 ) {
-    suspend fun getAccountData(): Account {
+    fun getAccountData(): Account {
         val jsonString = JsonUtils.loadJSONFromAsset(context, "exercise.json")
         val jsonObject = JSONObject(jsonString)
         return gson.fromJson(jsonObject.getJSONObject("account").toString(), Account::class.java)
     }
 
-    suspend fun getTransactions(): List<Transaction> {
+    fun getTransactions(): List<Transaction> {
         val jsonString = JsonUtils.loadJSONFromAsset(context, "exercise.json")
         val jsonObject = JSONObject(jsonString)
         val transactions = jsonObject.getJSONArray("transactions")

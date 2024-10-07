@@ -2,6 +2,7 @@ package com.irinaabdriaeva.project.testappcommbank.account.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -48,10 +49,8 @@ fun AccountScreen(
     val account = viewModel.account.collectAsState().value
     val transactions = viewModel.transactions.collectAsState().value
     val pending = viewModel.pendingAmount.collectAsState().value
-    // Define the scroll behavior for the top bar
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
-    // Scaffold to manage the layout with a top bar and a content body
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -87,16 +86,18 @@ fun AccountScreen(
                 HorizontalDivider(color = Color.LightGray, thickness = 2.dp)
                 AccountDetailsSection(account.bsb, account.accountNumber)
                 HorizontalDivider(color = Color.LightGray, thickness = 2.dp)
+
                 // Scrollable content (LazyColumn with onClick behavior)
                 LazyColumn {
                     transactions.forEach { transactionGroup ->
                         item {
                             DateHeader(transactionGroup.date, transactionGroup.relativeDate)
                             transactionGroup.transactions.forEach { transaction ->
-                                TransactionItem(transaction)
+                                TransactionItem(
+                                    transaction,
+                                    onClick = { onTransactionClick(transaction) })
                             }
                         }
-
                     }
                 }
             }
@@ -210,23 +211,24 @@ fun DateHeader(date: String, relativeDate: String) {
 }
 
 @Composable
-fun TransactionItem(transaction: Transaction) {
+fun TransactionItem(transaction: Transaction, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Transaction icon based on category
         val iconRes = getIconForCategory(transaction.category)
-        Image(modifier = Modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(Color.LightGray),
+        Image(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color.LightGray),
             painter = painterResource(id = iconRes),
             contentDescription = transaction.category,
 
-        )
+            )
 
         Spacer(modifier = Modifier.width(16.dp))
 

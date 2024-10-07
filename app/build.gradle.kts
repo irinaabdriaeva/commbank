@@ -51,6 +51,10 @@ android {
     }
 }
 
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -62,11 +66,11 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    implementation ("androidx.compose.ui:ui:1.7.3"   )    // Compose UI library
-    implementation ("androidx.compose.material3:material3:1.3.0") // Material Design 3
-    implementation ("androidx.compose.ui:ui-tooling-preview:1.7.3")
-    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("androidx.compose.ui:ui:1.7.3")
+    implementation("androidx.compose.material3:material3:1.3.0")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.7.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Compose Preview and Debugging
     debugImplementation("androidx.compose.ui:ui-tooling:1.7.3")
@@ -76,7 +80,7 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
 
-    implementation (libs.gson)
+    implementation(libs.gson)
 
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -89,4 +93,20 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // JUnit 5
+    testImplementation (libs.junit.jupiter.api)
+    testRuntimeOnly (libs.junit.jupiter.engine)
+
+    // MockK for mocking
+    testImplementation (libs.mockk)
+
+    // Kotlin coroutines test library
+    testImplementation (libs.kotlinx.coroutines.test)
+
+    // Hilt testing support
+    androidTestImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.android.compiler)
+    testImplementation(libs.hilt.android.testing)
+    kaptTest(libs.hilt.android.compiler)
 }

@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.irinaabdriaeva.project.testappcommbank.account.ui.screens.AccountScreen
+import com.irinaabdriaeva.project.testappcommbank.account.ui.screens.TransactionDetailScreen
 
 @Composable
 fun AppNavHost() {
@@ -29,7 +30,7 @@ fun AppNavHost() {
             arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
         ) { backStackEntry ->
             val transactionId = backStackEntry.arguments?.getString("transactionId")
-//            TransactionDetailScreen(transactionId = transactionId)
+            TransactionDetailScreen(transactionId = transactionId)
         }
     }
 }
