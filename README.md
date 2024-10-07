@@ -1,9 +1,11 @@
 # CBA test task project
 ## Account App
-This is an Android application that displays account information and a list of transactions using MVVM architecture, Jetpack Compose, Hilt for Dependency Injection, Material Design 3, and Coroutines . Data is fetched from a local JSON file (exercise.json) stored in the assets folder.
+This is an Android application that displays account information and a list of transactions using MVVM architecture, Jetpack Compose, 
+Hilt for Dependency Injection, Material Design 3, and Coroutines. 
+Data is fetched from a local JSON file (exercise.json) stored in the assets folder.
 
  #### Features: 
-	•	Displays account details (balance, available funds, account number).
+	•   Displays account details (balance, available funds, account number).
 	•	Displays a scrollable list of transactions grouped by date.
 	•	Transactions can be clicked to navigate to a detailed view.
 	•	Data is dynamically loaded from a local exercise.json file.
@@ -34,18 +36,18 @@ Ensure you have the following installed:
 #### Setup Instructions
 
 	1.	Clone the repository: git clone https://github.com/irinaabdriaeva/commbank.git
-  2.	Open the project in Android Studioand sync the project.
+    2.	Open the project in Android Studioand sync the project.
 
 #### Future Enhancements
 
 	•	Add error handling for failed data loading.
 	•	Improve the detail screen to show more transaction information.
-  •	Implement support for refreshing by pulling the list.
-  •	Increase unit tests coverage.
-  •	Create ui tests.
+    •	Implement support for refreshing by pulling the list.
+    •	Increase unit tests coverage.
+    •	Create ui tests.
 	•	Add more accessibility features.
 
-License
+#### License
 
 This project is licensed under the Apache-2.0 license - see the LICENSE file for details.
 
