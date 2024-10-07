@@ -10,73 +10,69 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccountViewModelTest {
-
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var viewModel: AccountViewModel
     private val getTransactionsUseCase: GetTransactionsUseCase = mockk()
     private val getAccountDetailsUseCase: GetAccountDetailsUseCase = mockk()
+    private val account = AccountBuilder().build()
+    private val transaction = TransactionBuilder().build()
 
     @BeforeEach
     fun setup() {
         Dispatchers.setMain(testDispatcher)
+        coEvery { getAccountDetailsUseCase() } returns account
+        coEvery { getTransactionsUseCase() } returns listOf(transaction)
+
         viewModel = AccountViewModel(getTransactionsUseCase, getAccountDetailsUseCase)
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         Dispatchers.resetMain()
     }
 
     @Test
     fun `loadData should load account details correctly`() = runTest {
-        val account = AccountBuilder()
-            .apply {
-                bsb = "123456"
-                accountNumber = "78901234"
-                accountName = "Test Account"
-                balance = "1000.0"
-                available = "900.0"
-            }.build()
-
         coEvery { getAccountDetailsUseCase() } returns account
         viewModel.loadData()
 
         val result = viewModel.account.first()
         assertEquals("123456", result.bsb)
         assertEquals("78901234", result.accountNumber)
-        assertEquals("Test Account", result.accountName)
-        assertEquals("1000.0", result.balance)
-        assertEquals("900.0", result.available)
+        assertEquals("Complete Access", result.accountName)
+        assertEquals("1000.00", result.balance)
+        assertEquals("900.00", result.available)
     }
 
     @Test
     fun `loadData should load transactions grouped by date`() = runTest {
         val transaction1 = TransactionBuilder().apply {
-            id = "id1"
+            id = "abc"
             amount = "-10.0"
             isPending = true
             description = "Transaction 1"
             category = "Shopping"
-            effectiveDate = "2022-10-01"
+            effectiveDate = "2022-01-10"
         }.build()
 
         val transaction2 = TransactionBuilder().apply {
-            id = "id2"
+            id = "dfe"
             amount = "-20.0"
             isPending = false
             description = "Transaction 2"
             category = "Groceries"
-            effectiveDate = "2022-10-01"
+            effectiveDate = "2022-01-10"
         }.build()
 
         val transactions = listOf(transaction1, transaction2)
@@ -85,10 +81,12 @@ class AccountViewModelTest {
 
         viewModel.loadData()
 
+        advanceUntilIdle()
+
         val result = viewModel.transactions.first()
         assertNotNull(result)
         assertEquals(1, result.size)
-        assertEquals("2022-10-01", result.first().date)
+        assertEquals("Mon 10 Jan", result.first().date)
         assertEquals(2, result.first().transactions.size)
     }
 
@@ -115,6 +113,7 @@ class AccountViewModelTest {
         coEvery { getTransactionsUseCase() } returns transactions
 
         viewModel.loadData()
+        advanceUntilIdle()
 
         val pendingAmount = viewModel.pendingAmount.first()
         assertEquals("-10.0", pendingAmount)
@@ -143,6 +142,7 @@ class AccountViewModelTest {
         coEvery { getTransactionsUseCase() } returns transactions
 
         viewModel.loadData()
+        advanceUntilIdle()
 
         val transaction = viewModel.getTransactionById("id1")
         assertNotNull(transaction)

@@ -45,7 +45,6 @@ fun AccountScreen(
     viewModel: AccountViewModel = hiltViewModel(),
     onTransactionClick: (Transaction) -> Unit
 ) {
-
     val account = viewModel.account.collectAsState().value
     val transactions = viewModel.transactions.collectAsState().value
     val pending = viewModel.pendingAmount.collectAsState().value
@@ -91,7 +90,7 @@ fun AccountScreen(
                 LazyColumn {
                     transactions.forEach { transactionGroup ->
                         item {
-                            DateHeader(transactionGroup.date, transactionGroup.relativeDate)
+                            TransactionsDateHeader(transactionGroup.date, transactionGroup.relativeDate)
                             transactionGroup.transactions.forEach { transaction ->
                                 TransactionItem(
                                     transaction,
@@ -189,7 +188,7 @@ fun AccountBalanceSection(available: String, balance: String, pending: Double) {
 }
 
 @Composable
-fun DateHeader(date: String, relativeDate: String) {
+fun TransactionsDateHeader(date: String, relativeDate: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

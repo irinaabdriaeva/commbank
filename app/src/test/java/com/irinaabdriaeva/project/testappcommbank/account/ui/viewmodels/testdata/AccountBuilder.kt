@@ -10,6 +10,6 @@ class AccountBuilder {
     var accountName: String = "Complete Access"
 
     fun build(): Account {
-        return Account(bsb, accountNumber, balance, available, accountName,)
+        return Account(bsb, accountNumber, balance, available, accountName)
     }
 }
